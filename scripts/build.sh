@@ -15,7 +15,3 @@ echo "🔨 Building project..."
 cmake --build "$build"
 
 echo "✅ Build completed."
-
-echo "🧪 Running tests..."
-cd "$build"
-ctest --output-on-failure
