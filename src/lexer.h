@@ -100,6 +100,8 @@ enum Token
   tok_less_than = -68,    // < for generics and comparison
   tok_greater_than = -69, // > for generics and comparison
   tok_dollar = -70,       // $ for class property access
+  tok_lsquare = -91,      // [ left bracket for arrays
+  tok_rsquare = -92,      // ] right bracket for arrays
 
   // arithmetic operators
   tok_plus_assign = -71,     // += addition assignment

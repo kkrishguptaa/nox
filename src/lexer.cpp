@@ -472,13 +472,13 @@ int get_token()
   if (LastChar == '[')
   {
     LastChar = getchar();
-    return '[';
+    return tok_lsquare; // [
   }
 
   if (LastChar == ']')
   {
     LastChar = getchar();
-    return ']';
+    return tok_rsquare; // ]
   }
 
   // Handle EOF
