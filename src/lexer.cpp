@@ -175,135 +175,93 @@ int get_token()
     return tok_string_literal;
   }
 
-  // Handle multi-character operators
-  if (LastChar == ':')
+  // Operators and punctuation dispatch
+  int c = LastChar;
+  LastChar = getchar();
+
+  switch (c)
   {
-    int NextChar = getchar();
-    if (NextChar == '=')
+  case ':':
+    if (LastChar == '=')
     {
-      LastChar = getchar();        // Consume the '='
-      return tok_assign_immutable; // :=
+      LastChar = getchar();
+      return tok_assign_immutable;
     }
-    LastChar = NextChar;
     return ':';
-  }
-
-  if (LastChar == '~')
-  {
-    int NextChar = getchar();
-    if (NextChar == '=')
+  case '~':
+    if (LastChar == '=')
     {
-      LastChar = getchar();   // Consume the '='
-      return tok_type_coerce; // ~=
+      LastChar = getchar();
+      return tok_type_coerce;
     }
-    else if (isalpha(NextChar))
+    if (isalpha(LastChar))
     {
-      // Check if this is ~construct (destructor)
-      // Read the word after ~ to see if it's "construct"
-      std::string PotentialKeyword;
-      PotentialKeyword += NextChar;
-
-      int ReadChar;
-      while (isalnum(ReadChar = getchar()))
+      // ~construct destructor
+      std::string potential;
+      potential += LastChar;
+      int ch;
+      while (isalnum(ch = getchar()))
       {
-        PotentialKeyword += ReadChar;
+        potential += ch;
       }
-
-      if (PotentialKeyword == "construct")
+      if (potential == "construct")
       {
-        LastChar = ReadChar; // Set LastChar to the character after "construct"
-        return tok_destruct; // ~construct
+        LastChar = ch;
+        return tok_destruct;
       }
-      else
-      {
-        // Not a destructor, put back all characters we read
-        ungetc(ReadChar, stdin);
-        for (int i = PotentialKeyword.length() - 1; i >= 0; i--)
-        {
-          ungetc(PotentialKeyword[i], stdin);
-        }
-        LastChar = getchar();   // Re-read the next character
-        return tok_bitwise_not; // ~
-      }
+      ungetc(ch, stdin);
+      for (int i = potential.size() - 1; i >= 0; --i)
+        ungetc(potential[i], stdin);
     }
-    else
+    return tok_bitwise_not;
+  case '-':
+    if (LastChar == '>')
     {
-      LastChar = NextChar;
-      return tok_bitwise_not; // ~
+      LastChar = getchar();
+      return tok_arrow;
     }
-  }
-
-  if (LastChar == '-')
-  {
-    int NextChar = getchar();
-    if (NextChar == '>')
+    if (LastChar == '=')
     {
-      LastChar = getchar(); // Consume the '>'
-      return tok_arrow;     // ->
+      LastChar = getchar();
+      return tok_minus_assign;
     }
-    else if (NextChar == '=')
+    if (LastChar == '-')
     {
-      LastChar = getchar();    // Consume the '='
-      return tok_minus_assign; // -=
+      LastChar = getchar();
+      return tok_decrement;
     }
-    else if (NextChar == '-')
-    {
-      LastChar = getchar(); // Consume the second '-'
-      return tok_decrement; // --
-    }
-    LastChar = NextChar;
     return '-';
-  }
-
-  if (LastChar == '+')
-  {
-    int NextChar = getchar();
-    if (NextChar == '=')
+  case '+':
+    if (LastChar == '=')
     {
-      LastChar = getchar();   // Consume the '='
-      return tok_plus_assign; // +=
+      LastChar = getchar();
+      return tok_plus_assign;
     }
-    else if (NextChar == '+')
+    if (LastChar == '+')
     {
-      LastChar = getchar(); // Consume the second '+'
-      return tok_increment; // ++
+      LastChar = getchar();
+      return tok_increment;
     }
-    LastChar = NextChar;
     return '+';
-  }
-
-  if (LastChar == '*')
-  {
-    int NextChar = getchar();
-    if (NextChar == '=')
+  case '*':
+    if (LastChar == '=')
     {
-      LastChar = getchar();       // Consume the '='
-      return tok_multiply_assign; // *=
+      LastChar = getchar();
+      return tok_multiply_assign;
     }
-    LastChar = NextChar;
     return '*';
-  }
-
-  if (LastChar == '/')
-  {
-    int NextChar = getchar();
-    if (NextChar == '/')
+  case '/':
+    if (LastChar == '/')
     {
-      // Single-line comment, skip until end of line
       do
       {
         LastChar = getchar();
       } while (LastChar != EOF && LastChar != '\n' && LastChar != '\r');
-
-      if (LastChar != EOF)
-        return get_token(); // Recursively get next token
-      else
-        return tok_eof; // Reached EOF while in comment
+      return get_token();
     }
-    else if (NextChar == '*')
+    if (LastChar == '*')
     {
-      // Multi-line comment, skip until */
-      LastChar = getchar(); // Skip '*'
+      LastChar = getchar();
       while (LastChar != EOF)
       {
         if (LastChar == '*')
@@ -311,8 +269,8 @@ int get_token()
           LastChar = getchar();
           if (LastChar == '/')
           {
-            LastChar = getchar(); // Skip '/'
-            return get_token();   // Recursively get next token
+            LastChar = getchar();
+            return get_token();
           }
         }
         else
@@ -320,173 +278,95 @@ int get_token()
           LastChar = getchar();
         }
       }
-      // If we reach here, comment was not properly closed but we reached EOF
       return tok_eof;
     }
-    else if (NextChar == '=')
+    if (LastChar == '=')
     {
-      LastChar = getchar();     // Consume the '='
-      return tok_divide_assign; // /=
+      LastChar = getchar();
+      return tok_divide_assign;
     }
-    else
+    return tok_union_type;
+  case '%':
+    if (LastChar == '=')
     {
-      LastChar = NextChar;
-      return tok_union_type; // / for union types like float/int
+      LastChar = getchar();
+      return tok_modulo_assign;
     }
-  }
-
-  if (LastChar == '%')
-  {
-    int NextChar = getchar();
-    if (NextChar == '=')
-    {
-      LastChar = getchar();     // Consume the '='
-      return tok_modulo_assign; // %=
-    }
-    LastChar = NextChar;
     return '%';
-  }
-
-  if (LastChar == '=')
-  {
-    int NextChar = getchar();
-    if (NextChar == '=')
+  case '=':
+    if (LastChar == '=')
     {
-      LastChar = getchar(); // Consume the second '='
-      return tok_equals;    // ==
+      LastChar = getchar();
+      return tok_equals;
     }
-    LastChar = NextChar;
     return '=';
-  }
-
-  if (LastChar == '!')
-  {
-    int NextChar = getchar();
-    if (NextChar == '=')
+  case '!':
+    if (LastChar == '=')
     {
-      LastChar = getchar();  // Consume the '='
-      return tok_not_equals; // !=
+      LastChar = getchar();
+      return tok_not_equals;
     }
-    LastChar = NextChar;
-    return tok_logical_not; // !
-  }
-
-  if (LastChar == '<')
-  {
-    int NextChar = getchar();
-    if (NextChar == '=')
+    return tok_logical_not;
+  case '<':
+    if (LastChar == '=')
     {
-      LastChar = getchar();  // Consume the '='
-      return tok_less_equal; // <=
+      LastChar = getchar();
+      return tok_less_equal;
     }
-    else if (NextChar == '<')
+    if (LastChar == '<')
     {
-      LastChar = getchar();  // Consume the second '<'
-      return tok_left_shift; // <<
+      LastChar = getchar();
+      return tok_left_shift;
     }
-    LastChar = NextChar;
-    return tok_less_than; // <
-  }
-
-  if (LastChar == '>')
-  {
-    int NextChar = getchar();
-    if (NextChar == '=')
+    return tok_less_than;
+  case '>':
+    if (LastChar == '=')
     {
-      LastChar = getchar();     // Consume the '='
-      return tok_greater_equal; // >=
+      LastChar = getchar();
+      return tok_greater_equal;
     }
-    else if (NextChar == '>')
+    if (LastChar == '>')
     {
-      LastChar = getchar();   // Consume the second '>'
-      return tok_right_shift; // >>
+      LastChar = getchar();
+      return tok_right_shift;
     }
-    LastChar = NextChar;
-    return tok_greater_than; // >
-  }
-
-  if (LastChar == '&')
-  {
-    int NextChar = getchar();
-    if (NextChar == '&')
+    return tok_greater_than;
+  case '&':
+    if (LastChar == '&')
     {
-      LastChar = getchar();   // Consume the second '&'
-      return tok_logical_and; // &&
+      LastChar = getchar();
+      return tok_logical_and;
     }
-    LastChar = NextChar;
-    return tok_bitwise_and; // &
-  }
-
-  if (LastChar == '|')
-  {
-    int NextChar = getchar();
-    if (NextChar == '|')
+    return tok_bitwise_and;
+  case '|':
+    if (LastChar == '|')
     {
-      LastChar = getchar();  // Consume the second '|'
-      return tok_logical_or; // ||
+      LastChar = getchar();
+      return tok_logical_or;
     }
-    LastChar = NextChar;
-    return tok_bitwise_or; // |
-  }
-
-  if (LastChar == '^')
-  {
-    LastChar = getchar();
-    return tok_bitwise_xor; // ^
-  }
-
-  // Handle range operator and property access
-  if (LastChar == '.')
-  {
-    int NextChar = getchar();
-    if (NextChar == '.')
+    return tok_bitwise_or;
+  case '^':
+    return tok_bitwise_xor;
+  case '.':
+    if (LastChar == '.')
     {
-      LastChar = getchar(); // Consume the second '.'
-      return tok_range;     // ..
+      LastChar = getchar();
+      return tok_range;
     }
-    LastChar = NextChar;
-    return tok_property_access; // .
-  }
-
-  // Handle object literals and blocks
-  if (LastChar == '{')
-  {
-    LastChar = getchar();
-    return tok_left_brace; // {
-  }
-
-  if (LastChar == '}')
-  {
-    LastChar = getchar();
-    return tok_right_brace; // }
-  }
-
-  // Handle class property access
-  if (LastChar == '$')
-  {
-    LastChar = getchar();
-    return tok_dollar; // $
-  }
-
-  // Handle array notation
-  if (LastChar == '[')
-  {
-    LastChar = getchar();
-    return tok_lsquare; // [
-  }
-
-  if (LastChar == ']')
-  {
-    LastChar = getchar();
-    return tok_rsquare; // ]
-  }
-
-  // Handle EOF
-  if (LastChar == EOF)
+    return tok_property_access;
+  case '{':
+    return tok_left_brace;
+  case '}':
+    return tok_right_brace;
+  case '$':
+    return tok_dollar;
+  case '[':
+    return tok_lsquare;
+  case ']':
+    return tok_rsquare;
+  case EOF:
     return tok_eof;
-
-  // Otherwise, just return the character as is (operators, punctuation, etc.)
-  int ThisChar = LastChar;
-  LastChar = getchar();
-  return ThisChar;
+  default:
+    return c;
+  }
 }

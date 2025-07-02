@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <unordered_map>
 
 // The lexer returns tokens [0-255] if it is an unknown character, otherwise one
 // of these for known things.
@@ -207,6 +208,126 @@ static std::unordered_map<std::string, int> keywords = {
     {"async", tok_async},
     {"await", tok_await},
     {"throw", tok_throw}};
+
+static std::unordered_map<Token, std::string> tokenNames = {
+    {tok_eof, "EOF"},
+    {tok_identifier, "Identifier"},
+    {tok_int8, "int8"},
+    {tok_int16, "int16"},
+    {tok_int32, "int32"},
+    {tok_int64, "int64"},
+    {tok_uint8, "uint8"},
+    {tok_uint16, "uint16"},
+    {tok_uint32, "uint32"},
+    {tok_uint64, "uint64"},
+    {tok_float32, "float32"},
+    {tok_float64, "float64"},
+    {tok_string, "string"},
+    {tok_boolean, "boolean"},
+    {tok_byte, "byte"},
+    {tok_character, "char"},
+    {tok_void, "void"},
+    {tok_null, "null"},
+    {tok_number, "number"},
+    {tok_string_literal, "string_literal"},
+    {tok_true, "true"},
+    {tok_false, "false"},
+    {tok_char_literal, "char_literal"},
+
+    // Loops
+    {tok_for, "for"},
+    {tok_while, "while"},
+    {tok_do, "do"},
+    {tok_continue, "continue"},
+    {tok_break, "break"},
+
+    // Conditionals
+    {tok_if, "if"},
+    {tok_else, "else"},
+    {tok_switch, "switch"},
+    {tok_case, "case"},
+    {tok_default, "default"},
+
+    // Functions
+    {tok_function, "function"},
+    {tok_return, "return"},
+    {tok_async, "async"},
+    {tok_await, "await"},
+    {tok_throw, "throw"},
+
+    // Collection types
+    {tok_map, "map"},
+    {tok_set_type, "set"},
+
+    // Object-oriented
+    {tok_class, "class"},
+    {tok_construct, "construct"},
+    {tok_destruct, "destruct"},
+    {tok_extends, "extends"},
+    {tok_this, "this"},
+    {tok_super, "super"},
+    {tok_private, "private"},
+    {tok_protected, "protected"},
+    {tok_public, "public"},
+    {tok_static, "static"},
+    {tok_get, "get"},
+    {tok_set, "set"},
+
+    // Advanced features
+    {tok_enum, "enum"},
+    {tok_promise, "promise"},
+    {tok_in, "in"},
+    {tok_type, "type"},
+
+    // Import/Export
+    {tok_import, "import"},
+    {tok_export, "export"},
+    {tok_from, "from"},
+
+    // Operators and punctuation
+    {tok_assign_immutable, ":="},
+    {tok_type_coerce, "~="},
+    {tok_arrow, "->"},
+    {tok_range, ".."},
+    {tok_property_access, "."},
+    {tok_union_type, "/"},
+
+    // Object and generic syntax
+    {tok_left_brace, "{"},
+    {tok_right_brace, "}"},
+    {tok_less_than, "<"},
+    {tok_greater_than, ">"},
+    {tok_dollar, "$"},
+    {tok_lsquare, "["},
+    {tok_rsquare, "]"},
+
+    // Arithmetic operators
+    {tok_plus_assign, "+="},
+    {tok_minus_assign, "-="},
+    {tok_multiply_assign, "*="},
+    {tok_divide_assign, "/="},
+    {tok_modulo_assign, "%="},
+    {tok_increment, "++"},
+    {tok_decrement, "--"},
+
+    // Comparison operators
+    {tok_equals, "=="},
+    {tok_not_equals, "!="},
+    {tok_less_equal, "<="},
+    {tok_greater_equal, ">="},
+
+    // Logical operators
+    {tok_logical_and, "&&"},
+    {tok_logical_or, "||"},
+    {tok_logical_not, "!"},
+
+    // Bitwise operators
+    {tok_bitwise_and, "&"},
+    {tok_bitwise_or, "|"},
+    {tok_bitwise_xor, "^"},
+    {tok_bitwise_not, "~"},
+    {tok_left_shift, "<<"},
+    {tok_right_shift, ">>"}};
 
 // Lexer output state exposed for testing
 extern std::string IdentifierString;
