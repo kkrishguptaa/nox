@@ -75,7 +75,7 @@ int get_token()
         int NextChar = peekChar();
         if (NextChar == '.')
         {
-          // This is a range operator, stop number parsing
+          // This is a range operator, stop parsing
           break;
         }
         else if (NextChar != EOF && isdigit(NextChar))
@@ -187,7 +187,7 @@ int get_token()
       LastChar = getchar();
       return tok_assign_immutable;
     }
-    return ':';
+    return tok_colon;
   case '~':
     if (LastChar == '=')
     {
@@ -213,7 +213,7 @@ int get_token()
       for (int i = potential.size() - 1; i >= 0; --i)
         ungetc(potential[i], stdin);
     }
-    return tok_bitwise_not;
+    return '~'; // No bitwise not token, return char
   case '-':
     if (LastChar == '>')
     {
@@ -230,7 +230,7 @@ int get_token()
       LastChar = getchar();
       return tok_decrement;
     }
-    return '-';
+    return tok_minus;
   case '+':
     if (LastChar == '=')
     {
@@ -242,14 +242,14 @@ int get_token()
       LastChar = getchar();
       return tok_increment;
     }
-    return '+';
+    return tok_plus;
   case '*':
     if (LastChar == '=')
     {
       LastChar = getchar();
       return tok_multiply_assign;
     }
-    return '*';
+    return tok_multiply;
   case '/':
     if (LastChar == '/')
     {
@@ -285,21 +285,21 @@ int get_token()
       LastChar = getchar();
       return tok_divide_assign;
     }
-    return tok_union_type;
+    return tok_divide;
   case '%':
     if (LastChar == '=')
     {
       LastChar = getchar();
       return tok_modulo_assign;
     }
-    return '%';
+    return tok_modulo;
   case '=':
     if (LastChar == '=')
     {
       LastChar = getchar();
       return tok_equals;
     }
-    return '=';
+    return tok_assign;
   case '!':
     if (LastChar == '=')
     {
@@ -313,22 +313,12 @@ int get_token()
       LastChar = getchar();
       return tok_less_equal;
     }
-    if (LastChar == '<')
-    {
-      LastChar = getchar();
-      return tok_left_shift;
-    }
     return tok_less_than;
   case '>':
     if (LastChar == '=')
     {
       LastChar = getchar();
       return tok_greater_equal;
-    }
-    if (LastChar == '>')
-    {
-      LastChar = getchar();
-      return tok_right_shift;
     }
     return tok_greater_than;
   case '&':
@@ -337,23 +327,31 @@ int get_token()
       LastChar = getchar();
       return tok_logical_and;
     }
-    return tok_bitwise_and;
+    return '&';
   case '|':
     if (LastChar == '|')
     {
       LastChar = getchar();
       return tok_logical_or;
     }
-    return tok_bitwise_or;
+    return '|';
   case '^':
-    return tok_bitwise_xor;
+    return tok_exponent;
   case '.':
     if (LastChar == '.')
     {
+      if (peekChar() == '.')
+      {
+        // Spread operator
+        LastChar = getchar(); // Consume second dot
+        LastChar = getchar(); // Consume third dot
+        return tok_spread;
+      }
+
       LastChar = getchar();
       return tok_range;
     }
-    return tok_property_access;
+    return tok_dot;
   case '{':
     return tok_left_brace;
   case '}':
@@ -361,9 +359,17 @@ int get_token()
   case '$':
     return tok_dollar;
   case '[':
-    return tok_lsquare;
+    return tok_left_square;
   case ']':
-    return tok_rsquare;
+    return tok_right_square;
+  case '(':
+    return tok_left_paren;
+  case ')':
+    return tok_right_paren;
+  case ',':
+    return tok_comma;
+  case ';':
+    return tok_semicolon;
   case EOF:
     return tok_eof;
   default:
