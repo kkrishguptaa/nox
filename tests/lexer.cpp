@@ -31,3 +31,12 @@ TEST(LexerTest, NumberLiteral)
   EXPECT_EQ(tok, tok_number);
   EXPECT_DOUBLE_EQ(NumberValue, 42.0);
 }
+
+TEST(LexerTest, StringLiteral)
+{
+  StdinRedirect rd("\"hello world\" ");
+
+  int tok = get_token();
+  EXPECT_EQ(tok, tok_string_literal);
+  EXPECT_EQ(StringValue, "hello world");
+}
