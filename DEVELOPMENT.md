@@ -21,19 +21,13 @@ To set up the development environment for the project, follow these steps:
     brew install llvm
     ```
 
-3. **Install Bazel**:
-    Ensure you have Bazel installed on your machine. You can download it from the [Bazel website](https://bazel.build/).
+3. **Install CMake and Ninja**:
+    Ensure you have CMake and ninja installed on your machine.
 
     For example, on macOS, you can use Homebrew:
 
     ```sh
-    brew install bazel
-    ```
-
-    Then, make sure to get VSCode to recognize the Bazel paths:
-
-    ```sh
-    bazel run @hedron_compile_commands//:refresh_all
+    brew install cmake ninja
     ```
 
 4. **Develop!!!**:
