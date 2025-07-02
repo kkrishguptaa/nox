@@ -92,8 +92,8 @@ enum Token
   tok_type_coerce = -61,      // ~= type coercion operator
   tok_arrow = -62,            // -> arrow operator (function return type)
   tok_range = -63,            // .. range operator (inclusive)
-  tok_property_access = -64,  // . property access operator
-  tok_union_type = -65,       // / union type operator
+  tok_spread = -104,          // ... spread operator
+  tok_dot = -64,              // . property access operator
 
   // object and generic syntax
   tok_left_brace = -66,   // { left brace for objects/blocks
@@ -101,8 +101,8 @@ enum Token
   tok_less_than = -68,    // < for generics and comparison
   tok_greater_than = -69, // > for generics and comparison
   tok_dollar = -70,       // $ for class property access
-  tok_lsquare = -91,      // [ left bracket for arrays
-  tok_rsquare = -92,      // ] right bracket for arrays
+  tok_left_square = -91,  // [ left bracket for arrays
+  tok_right_square = -92, // ] right bracket for arrays
 
   // arithmetic operators
   tok_plus_assign = -71,     // += addition assignment
@@ -125,12 +125,22 @@ enum Token
   tok_logical_not = -84, // ! logical NOT
 
   // bitwise operators
-  tok_bitwise_and = -85, // & bitwise AND
-  tok_bitwise_or = -86,  // | bitwise OR
-  tok_bitwise_xor = -87, // ^ bitwise XOR
-  tok_bitwise_not = -88, // ~ bitwise NOT (complement)
-  tok_left_shift = -89,  // << left shift
-  tok_right_shift = -90, // >> right shift
+  tok_exponent = -87, // ^ exponent operator
+
+  // Basic single-character operators
+  tok_plus = -93,     // + addition operator
+  tok_minus = -94,    // - subtraction operator
+  tok_multiply = -95, // * multiplication operator
+  tok_divide = -96,   // / division operator
+  tok_modulo = -97,   // % modulo operator
+  tok_assign = -98,   // = assignment operator
+
+  // Punctuation tokens
+  tok_left_paren = -99,   // ( left parenthesis
+  tok_right_paren = -100, // ) right parenthesis
+  tok_comma = -101,       // , comma
+  tok_semicolon = -102,   // ; semicolon
+  tok_colon = -103,       // : colon
 };
 
 // Keyword lookup table for better performance
@@ -208,126 +218,6 @@ static std::unordered_map<std::string, int> keywords = {
     {"async", tok_async},
     {"await", tok_await},
     {"throw", tok_throw}};
-
-static std::unordered_map<Token, std::string> tokenNames = {
-    {tok_eof, "EOF"},
-    {tok_identifier, "Identifier"},
-    {tok_int8, "int8"},
-    {tok_int16, "int16"},
-    {tok_int32, "int32"},
-    {tok_int64, "int64"},
-    {tok_uint8, "uint8"},
-    {tok_uint16, "uint16"},
-    {tok_uint32, "uint32"},
-    {tok_uint64, "uint64"},
-    {tok_float32, "float32"},
-    {tok_float64, "float64"},
-    {tok_string, "string"},
-    {tok_boolean, "boolean"},
-    {tok_byte, "byte"},
-    {tok_character, "char"},
-    {tok_void, "void"},
-    {tok_null, "null"},
-    {tok_number, "number"},
-    {tok_string_literal, "string_literal"},
-    {tok_true, "true"},
-    {tok_false, "false"},
-    {tok_char_literal, "char_literal"},
-
-    // Loops
-    {tok_for, "for"},
-    {tok_while, "while"},
-    {tok_do, "do"},
-    {tok_continue, "continue"},
-    {tok_break, "break"},
-
-    // Conditionals
-    {tok_if, "if"},
-    {tok_else, "else"},
-    {tok_switch, "switch"},
-    {tok_case, "case"},
-    {tok_default, "default"},
-
-    // Functions
-    {tok_function, "function"},
-    {tok_return, "return"},
-    {tok_async, "async"},
-    {tok_await, "await"},
-    {tok_throw, "throw"},
-
-    // Collection types
-    {tok_map, "map"},
-    {tok_set_type, "set"},
-
-    // Object-oriented
-    {tok_class, "class"},
-    {tok_construct, "construct"},
-    {tok_destruct, "destruct"},
-    {tok_extends, "extends"},
-    {tok_this, "this"},
-    {tok_super, "super"},
-    {tok_private, "private"},
-    {tok_protected, "protected"},
-    {tok_public, "public"},
-    {tok_static, "static"},
-    {tok_get, "get"},
-    {tok_set, "set"},
-
-    // Advanced features
-    {tok_enum, "enum"},
-    {tok_promise, "promise"},
-    {tok_in, "in"},
-    {tok_type, "type"},
-
-    // Import/Export
-    {tok_import, "import"},
-    {tok_export, "export"},
-    {tok_from, "from"},
-
-    // Operators and punctuation
-    {tok_assign_immutable, ":="},
-    {tok_type_coerce, "~="},
-    {tok_arrow, "->"},
-    {tok_range, ".."},
-    {tok_property_access, "."},
-    {tok_union_type, "/"},
-
-    // Object and generic syntax
-    {tok_left_brace, "{"},
-    {tok_right_brace, "}"},
-    {tok_less_than, "<"},
-    {tok_greater_than, ">"},
-    {tok_dollar, "$"},
-    {tok_lsquare, "["},
-    {tok_rsquare, "]"},
-
-    // Arithmetic operators
-    {tok_plus_assign, "+="},
-    {tok_minus_assign, "-="},
-    {tok_multiply_assign, "*="},
-    {tok_divide_assign, "/="},
-    {tok_modulo_assign, "%="},
-    {tok_increment, "++"},
-    {tok_decrement, "--"},
-
-    // Comparison operators
-    {tok_equals, "=="},
-    {tok_not_equals, "!="},
-    {tok_less_equal, "<="},
-    {tok_greater_equal, ">="},
-
-    // Logical operators
-    {tok_logical_and, "&&"},
-    {tok_logical_or, "||"},
-    {tok_logical_not, "!"},
-
-    // Bitwise operators
-    {tok_bitwise_and, "&"},
-    {tok_bitwise_or, "|"},
-    {tok_bitwise_xor, "^"},
-    {tok_bitwise_not, "~"},
-    {tok_left_shift, "<<"},
-    {tok_right_shift, ">>"}};
 
 // Lexer output state exposed for testing
 extern std::string IdentifierString;
