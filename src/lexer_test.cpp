@@ -3,6 +3,33 @@
 #include <string>
 #include <lexer.h>
 
+// Utility
+
+struct StdinRedirect
+{
+  int old_stdin_fd;
+  FILE *tmp;
+  StdinRedirect(const std::string &s)
+  {
+    // Create temporary file with padded input
+    tmp = tmpfile();
+    std::string padded = " " + s + " ";
+    fwrite(padded.data(), 1, padded.size(), tmp);
+    rewind(tmp);
+    // Duplicate stdin fd and redirect to tmp
+    old_stdin_fd = dup(fileno(stdin));
+    dup2(fileno(tmp), fileno(stdin));
+  }
+  ~StdinRedirect()
+  {
+    // Restore original stdin fd
+    fflush(stdin);
+    dup2(old_stdin_fd, fileno(stdin));
+    close(old_stdin_fd);
+    fclose(tmp);
+  }
+};
+
 // Helper to redirect stdin for get_token tests
 
 TEST(lexer_test, Identifier)
