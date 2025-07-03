@@ -313,14 +313,14 @@ int get_token()
       LastChar = getchar();
       return tok_less_equal;
     }
-    return tok_less_than;
+    return tok_left_angle;
   case '>':
     if (LastChar == '=')
     {
       LastChar = getchar();
       return tok_greater_equal;
     }
-    return tok_greater_than;
+    return tok_right_angle;
   case '&':
     if (LastChar == '&')
     {

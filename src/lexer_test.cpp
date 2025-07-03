@@ -4,41 +4,23 @@
 #include <lexer.h>
 
 // Helper to redirect stdin for get_token tests
-struct StdinRedirect
-{
-  FILE *old_stdin;
-  FILE *tmp;
-  StdinRedirect(const std::string &s)
-  {
-    old_stdin = stdin;
-    tmp = tmpfile();
-    fwrite(s.data(), 1, s.size(), tmp);
-    rewind(tmp);
-    stdin = tmp;
-  }
-  ~StdinRedirect()
-  {
-    fclose(tmp);
-    stdin = old_stdin;
-  }
-};
 
 TEST(lexer_test, Identifier)
 {
-  StdinRedirect redirect("myVar ");
+  StdinRedirect redirect("myVar");
   EXPECT_EQ(get_token(), tok_identifier);
   EXPECT_EQ(IdentifierString, "myVar");
 }
 
 TEST(lexer_test, Keyword)
 {
-  StdinRedirect redirect("int8 ");
+  StdinRedirect redirect("int8");
   EXPECT_EQ(get_token(), tok_int8);
 }
 
 TEST(lexer_test, BooleanLiterals)
 {
-  StdinRedirect redirect("true false ");
+  StdinRedirect redirect("true false");
   EXPECT_EQ(get_token(), tok_true);
   EXPECT_TRUE(BooleanValue);
   EXPECT_EQ(get_token(), tok_false);
@@ -47,7 +29,7 @@ TEST(lexer_test, BooleanLiterals)
 
 TEST(lexer_test, NumberLiterals)
 {
-  StdinRedirect redirect("42 3.14 ");
+  StdinRedirect redirect("42 3.14");
   EXPECT_EQ(get_token(), tok_number);
   EXPECT_EQ(NumberValue, 42);
   EXPECT_EQ(get_token(), tok_number);
@@ -56,7 +38,7 @@ TEST(lexer_test, NumberLiterals)
 
 TEST(lexer_test, StringLiterals)
 {
-  StdinRedirect redirect("\"hello\" 'A' ");
+  StdinRedirect redirect("\"hello\" 'A'");
   EXPECT_EQ(get_token(), tok_string_literal);
   EXPECT_EQ(StringValue, "hello");
   EXPECT_EQ(get_token(), tok_char_literal);
@@ -65,7 +47,7 @@ TEST(lexer_test, StringLiterals)
 
 TEST(lexer_test, SpecialOperators)
 {
-  StdinRedirect redirect("= := ~= .. -> ");
+  StdinRedirect redirect("= := ~= .. ->");
   EXPECT_EQ(get_token(), tok_assign);
   EXPECT_EQ(get_token(), tok_assign_immutable);
   EXPECT_EQ(get_token(), tok_type_coerce);
@@ -75,7 +57,7 @@ TEST(lexer_test, SpecialOperators)
 
 TEST(lexer_test, MathematicalOperators)
 {
-  StdinRedirect redirect("+ - * / % ^ ");
+  StdinRedirect redirect("+ - * / % ^");
 
   EXPECT_EQ(get_token(), tok_plus);
   EXPECT_EQ(get_token(), tok_minus);
@@ -87,7 +69,7 @@ TEST(lexer_test, MathematicalOperators)
 
 TEST(lexer_test, AssignmentOperators)
 {
-  StdinRedirect redirect("+= -= *= /= %= ");
+  StdinRedirect redirect("+= -= *= /= %=");
 
   EXPECT_EQ(get_token(), tok_plus_assign);
   EXPECT_EQ(get_token(), tok_minus_assign);
@@ -98,19 +80,19 @@ TEST(lexer_test, AssignmentOperators)
 
 TEST(lexer_test, ComparisonOperators)
 {
-  StdinRedirect redirect("== != < > <= >= ");
+  StdinRedirect redirect("== != < > <= >=");
 
   EXPECT_EQ(get_token(), tok_equals);
   EXPECT_EQ(get_token(), tok_not_equals);
-  EXPECT_EQ(get_token(), tok_less_than);
-  EXPECT_EQ(get_token(), tok_greater_than);
+  EXPECT_EQ(get_token(), tok_left_angle);
+  EXPECT_EQ(get_token(), tok_right_angle);
   EXPECT_EQ(get_token(), tok_less_equal);
   EXPECT_EQ(get_token(), tok_greater_equal);
 }
 
 TEST(lexer_test, LogicalOperators)
 {
-  StdinRedirect redirect("&& || ! ");
+  StdinRedirect redirect("&& || !");
 
   EXPECT_EQ(get_token(), tok_logical_and);
   EXPECT_EQ(get_token(), tok_logical_or);
@@ -119,14 +101,14 @@ TEST(lexer_test, LogicalOperators)
 
 TEST(lexer_test, Deconstruct)
 {
-  StdinRedirect redirect("~construct ");
+  StdinRedirect redirect("~construct");
 
   EXPECT_EQ(get_token(), tok_destruct);
 }
 
 TEST(lexer_test, Punctuation)
 {
-  StdinRedirect redirect("() [] {} , ; : . ");
+  StdinRedirect redirect("() [] {} , ; : .");
 
   EXPECT_EQ(get_token(), tok_left_paren);
   EXPECT_EQ(get_token(), tok_right_paren);

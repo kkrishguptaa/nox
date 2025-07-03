@@ -21,5 +21,5 @@ jobs:
         with:
           cmake-version: "4.x.x"
 
-      - name: Test
+      - name: Build and Test
         run: bash scripts/test.sh
