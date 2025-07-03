@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 #include <unordered_map>
+#include <cstdio>
+#include <unistd.h> // for dup, dup2, close
 
 // The lexer returns tokens [0-255] if it is an unknown character, otherwise one
 // of these for known things.
@@ -67,14 +69,12 @@ enum Token
   tok_construct = -42, // Constructor keyword
   tok_destruct = -43,  // Destructor keyword (~construct)
   tok_extends = -44,   // Inheritance keyword
-  tok_this = -45,      // This reference keyword
   tok_super = -46,     // Super reference keyword
   tok_private = -47,   // Private access modifier
   tok_protected = -48, // Protected access modifier
-  tok_public = -49,    // Public access modifier (default)
-  tok_static = -50,    // Static modifier
   tok_get = -51,       // Getter method keyword
   tok_set = -52,       // Setter method keyword
+  tok_dollar = -70,    // $ for class property access
 
   // advanced features
   tok_enum = -53,    // Enum definition keyword
@@ -88,21 +88,31 @@ enum Token
   tok_from = -59,   // From keyword in import
 
   // operators and punctuation
+  tok_assign = -98,           // = assignment operator
   tok_assign_immutable = -60, // := immutable assignment operator
   tok_type_coerce = -61,      // ~= type coercion operator
   tok_arrow = -62,            // -> arrow operator (function return type)
   tok_range = -63,            // .. range operator (inclusive)
   tok_spread = -104,          // ... spread operator
-  tok_dot = -64,              // . property access operator
 
-  // object and generic syntax
-  tok_left_brace = -66,   // { left brace for objects/blocks
-  tok_right_brace = -67,  // } right brace for objects/blocks
-  tok_less_than = -68,    // < for generics and comparison
-  tok_greater_than = -69, // > for generics and comparison
-  tok_dollar = -70,       // $ for class property access
-  tok_left_square = -91,  // [ left bracket for arrays
-  tok_right_square = -92, // ] right bracket for arrays
+  // Basic operators
+  tok_plus = -93,     // + addition operator
+  tok_minus = -94,    // - subtraction operator
+  tok_multiply = -95, // * multiplication operator
+  tok_divide = -96,   // / division operator
+  tok_modulo = -97,   // % modulo operator
+  tok_exponent = -87, // ^ exponent operator
+
+  // comparison operators
+  tok_equals = -78,        // == equality operator
+  tok_not_equals = -79,    // != inequality operator
+  tok_left_angle = -68,    // < for generics and comparison
+  tok_right_angle = -69,   // > for generics and comparison
+  tok_less_equal = -80,    // <= less than or equal
+  tok_greater_equal = -81, // >= greater than or equal
+  tok_logical_and = -82,   // && logical AND
+  tok_logical_or = -83,    // || logical OR
+  tok_logical_not = -84,   // ! logical NOT
 
   // arithmetic operators
   tok_plus_assign = -71,     // += addition assignment
@@ -113,34 +123,17 @@ enum Token
   tok_increment = -76,       // ++ increment operator
   tok_decrement = -77,       // -- decrement operator
 
-  // comparison operators
-  tok_equals = -78,        // == equality operator
-  tok_not_equals = -79,    // != inequality operator
-  tok_less_equal = -80,    // <= less than or equal
-  tok_greater_equal = -81, // >= greater than or equal
-
-  // logical operators
-  tok_logical_and = -82, // && logical AND
-  tok_logical_or = -83,  // || logical OR
-  tok_logical_not = -84, // ! logical NOT
-
-  // bitwise operators
-  tok_exponent = -87, // ^ exponent operator
-
-  // Basic single-character operators
-  tok_plus = -93,     // + addition operator
-  tok_minus = -94,    // - subtraction operator
-  tok_multiply = -95, // * multiplication operator
-  tok_divide = -96,   // / division operator
-  tok_modulo = -97,   // % modulo operator
-  tok_assign = -98,   // = assignment operator
-
-  // Punctuation tokens
+  // punctuation
+  tok_left_brace = -66,   // { left brace for objects/blocks
+  tok_right_brace = -67,  // } right brace for objects/blocks
+  tok_left_square = -91,  // [ left bracket for arrays
+  tok_right_square = -92, // ] right bracket for arrays
   tok_left_paren = -99,   // ( left parenthesis
   tok_right_paren = -100, // ) right parenthesis
   tok_comma = -101,       // , comma
   tok_semicolon = -102,   // ; semicolon
   tok_colon = -103,       // : colon
+  tok_dot = -64,          // . property access operator
 };
 
 // Keyword lookup table for better performance
@@ -178,12 +171,9 @@ static std::unordered_map<std::string, int> keywords = {
     {"class", tok_class},
     {"construct", tok_construct},
     {"extends", tok_extends},
-    {"this", tok_this},
     {"super", tok_super},
     {"private", tok_private},
     {"protected", tok_protected},
-    {"public", tok_public},
-    {"static", tok_static},
     {"get", tok_get},
     {"set", tok_set},
 
@@ -225,6 +215,33 @@ extern std::string StringValue;
 extern double NumberValue;
 extern bool BooleanValue;
 extern char CharValue;
+
+// Utility function
+
+struct StdinRedirect
+{
+  int old_stdin_fd;
+  FILE *tmp;
+  StdinRedirect(const std::string &s)
+  {
+    // Create temporary file with padded input
+    tmp = tmpfile();
+    std::string padded = " " + s + " ";
+    fwrite(padded.data(), 1, padded.size(), tmp);
+    rewind(tmp);
+    // Duplicate stdin fd and redirect to tmp
+    old_stdin_fd = dup(fileno(stdin));
+    dup2(fileno(tmp), fileno(stdin));
+  }
+  ~StdinRedirect()
+  {
+    // Restore original stdin fd
+    fflush(stdin);
+    dup2(old_stdin_fd, fileno(stdin));
+    close(old_stdin_fd);
+    fclose(tmp);
+  }
+};
 
 // Lexing function
 extern int get_token();
