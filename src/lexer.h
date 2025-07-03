@@ -2,7 +2,9 @@
 #include <string>
 #include <unordered_map>
 #include <cstdio>
+#ifdef _POSIX_VERSION
 #include <unistd.h> // for dup, dup2, close
+#endif
 
 // The lexer returns tokens [0-255] if it is an unknown character, otherwise one
 // of these for known things.
@@ -215,33 +217,6 @@ extern std::string StringValue;
 extern double NumberValue;
 extern bool BooleanValue;
 extern char CharValue;
-
-// Utility function
-
-struct StdinRedirect
-{
-  int old_stdin_fd;
-  FILE *tmp;
-  StdinRedirect(const std::string &s)
-  {
-    // Create temporary file with padded input
-    tmp = tmpfile();
-    std::string padded = " " + s + " ";
-    fwrite(padded.data(), 1, padded.size(), tmp);
-    rewind(tmp);
-    // Duplicate stdin fd and redirect to tmp
-    old_stdin_fd = dup(fileno(stdin));
-    dup2(fileno(tmp), fileno(stdin));
-  }
-  ~StdinRedirect()
-  {
-    // Restore original stdin fd
-    fflush(stdin);
-    dup2(old_stdin_fd, fileno(stdin));
-    close(old_stdin_fd);
-    fclose(tmp);
-  }
-};
 
 // Lexing function
 extern int get_token();
